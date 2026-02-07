@@ -24,7 +24,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY') or os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-c8aetlj(=vp90n@#yoc^&d(_6ivp(d!bv-4-f!r$lawptjzrwu')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
+# DEBUG should only be True if explicitly set or if DATABASE_URL is not set (local dev)
+if os.environ.get('DATABASE_URL'):
+    DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
+else:
+    DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
 
 ALLOWED_HOSTS = ['.vercel.app', '.onrender.com', 'localhost', '127.0.0.1']
 if os.environ.get('RENDER_EXTERNAL_HOSTNAME'):
