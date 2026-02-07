@@ -31,8 +31,8 @@ LANGUAGE_CHOICES = [
 class Movie(models.Model):
     name = models.CharField(max_length=255)
     image = models.ImageField(upload_to="movies/", blank=True, null=True)
-    rating = models.DecimalField(max_digits=3, decimal_places=1)
-    cast = models.TextField()
+    rating = models.DecimalField(max_digits=3, decimal_places=1, blank=True, null=True)
+    cast = models.TextField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     genre = models.CharField(max_length=50, choices=GENRE_CHOICES, default='other')
     language = models.CharField(max_length=50, choices=LANGUAGE_CHOICES, default='english')

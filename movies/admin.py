@@ -11,7 +11,7 @@ class MovieAdmin(admin.ModelAdmin):
         }),
         ('Media', {
             'fields': ('image', 'trailer_url'),
-            'description': 'Image: Optional. Note: File uploads on Vercel are temporary and will not persist. Use external image URLs instead.'
+            'description': 'Image: Optional. For Vercel, use external image URLs. Uploads do not persist.'
         }),
         ('Pricing', {
             'fields': ('ticket_price',)
