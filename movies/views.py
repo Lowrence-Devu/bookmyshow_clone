@@ -300,13 +300,23 @@ def admin_dashboard(request):
             total=Sum('amount')
         )['total'] or 0
 
-        popular_movies = Movie.objects.annotate(
-            booking_count=Count('booking_set')
+        # Get popular movies by counting bookings
+        popular_movies = Booking.objects.values('movie').annotate(
+            booking_count=Count('id')
         ).order_by('-booking_count')[:5]
+        
+        # Enhance with movie details
+        popular_movie_ids = [item['movie'] for item in popular_movies]
+        popular_movies = Movie.objects.filter(id__in=popular_movie_ids)
 
-        busiest_theaters = Theater.objects.annotate(
-            booking_count=Count('booking_set')
+        # Get busiest theaters by counting bookings
+        busiest_theaters = Booking.objects.values('theater').annotate(
+            booking_count=Count('id')
         ).order_by('-booking_count')[:5]
+        
+        # Enhance with theater details
+        busiest_theater_ids = [item['theater'] for item in busiest_theaters]
+        busiest_theaters = Theater.objects.filter(id__in=busiest_theater_ids)
 
         recent_bookings = Booking.objects.select_related('user', 'movie', 'theater', 'seat').order_by('-booked_at')[:10]
 
