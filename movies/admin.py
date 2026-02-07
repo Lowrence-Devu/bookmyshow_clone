@@ -5,6 +5,18 @@ from .models import Movie, Theater, Seat, Booking, SeatReservation
 class MovieAdmin(admin.ModelAdmin):
     list_display = ['name', 'rating', 'genre', 'language', 'cast']
     list_filter = ['genre', 'language']
+    fieldsets = (
+        ('Basic Info', {
+            'fields': ('name', 'rating', 'genre', 'language', 'cast', 'description')
+        }),
+        ('Media', {
+            'fields': ('image', 'trailer_url'),
+            'description': 'Image: Optional. Note: File uploads on Vercel are temporary and will not persist. Use external image URLs instead.'
+        }),
+        ('Pricing', {
+            'fields': ('ticket_price',)
+        }),
+    )
 
 
 @admin.register(Theater)
