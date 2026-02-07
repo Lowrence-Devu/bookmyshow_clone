@@ -5,8 +5,10 @@ from django.conf.urls.static import static
 from movies.views import admin_dashboard
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    # Custom admin dashboard (must come before admin.site.urls to take precedence)
     path('admin/dashboard/', admin_dashboard, name='admin_dashboard'),
+    # Django admin panel
+    path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
     path('', include('users.urls')),
     path('movies/', include('movies.urls')),
