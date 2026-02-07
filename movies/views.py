@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.contrib.admin.views.decorators import staff_member_required
 from django.db import IntegrityError
 from django.db.models import Sum, Count
 from django.utils import timezone
@@ -288,26 +287,35 @@ def book_seats(request, theater_id):
     return render(request, 'movies/seat_selection.html', {'theaters': theater, 'seats': seats})
 
 
-@staff_member_required
+@login_required
 def admin_dashboard(request):
-    """Admin dashboard with analytics."""
-    total_revenue = Booking.objects.filter(payment_status='completed').aggregate(
-        total=Sum('amount')
-    )['total'] or 0
+    """Admin dashboard with analytics - only for superusers or staff."""
+    # Allow only superusers or staff members
+    if not (request.user.is_superuser or request.user.is_staff):
+        messages.error(request, 'You do not have permission to access the admin dashboard.')
+        return redirect('home')
+    
+    try:
+        total_revenue = Booking.objects.filter(payment_status='completed').aggregate(
+            total=Sum('amount')
+        )['total'] or 0
 
-    popular_movies = Movie.objects.annotate(
-        booking_count=Count('booking_set')
-    ).order_by('-booking_count')[:5]
+        popular_movies = Movie.objects.annotate(
+            booking_count=Count('booking_set')
+        ).order_by('-booking_count')[:5]
 
-    busiest_theaters = Theater.objects.annotate(
-        booking_count=Count('booking_set')
-    ).order_by('-booking_count')[:5]
+        busiest_theaters = Theater.objects.annotate(
+            booking_count=Count('booking_set')
+        ).order_by('-booking_count')[:5]
 
-    recent_bookings = Booking.objects.select_related('user', 'movie', 'theater', 'seat').order_by('-booked_at')[:10]
+        recent_bookings = Booking.objects.select_related('user', 'movie', 'theater', 'seat').order_by('-booked_at')[:10]
 
-    return render(request, 'admin/dashboard.html', {
-        'total_revenue': total_revenue,
-        'popular_movies': popular_movies,
-        'busiest_theaters': busiest_theaters,
-        'recent_bookings': recent_bookings,
-    })
+        return render(request, 'admin/dashboard.html', {
+            'total_revenue': total_revenue,
+            'popular_movies': popular_movies,
+            'busiest_theaters': busiest_theaters,
+            'recent_bookings': recent_bookings,
+        })
+    except Exception as e:
+        messages.error(request, f'Error loading dashboard: {str(e)}')
+        return redirect('home')
