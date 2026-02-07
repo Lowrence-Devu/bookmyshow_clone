@@ -1,0 +1,60 @@
+{% extends "users/basic.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12 col-md-4 col-lg-3 mb-4">
+            <img src="{{ movie.image.url }}" class="img-fluid rounded shadow" alt="{{ movie.name }}" style="width:100%; max-height: 400px; object-fit: cover;">
+        </div>
+        <div class="col-12 col-md-8 col-lg-9">
+            <h1 class="mb-2">{{ movie.name }}</h1>
+            <p class="text-muted mb-2">
+                <i class="fas fa-star text-warning"></i> {{ movie.rating }}
+                <span class="badge badge-secondary ml-2">{{ movie.get_genre_display }}</span>
+                <span class="badge badge-info ml-1">{{ movie.get_language_display }}</span>
+            </p>
+            <p class="mb-2"><strong>Cast:</strong> {{ movie.cast }}</p>
+            {% if movie.description %}
+            <p class="mb-3">{{ movie.description }}</p>
+            {% endif %}
+            <a href="{% url 'theater_list' movie.id %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-ticket-alt"></i> Book Tickets
+            </a>
+        </div>
+    </div>
+
+    {% if embed_url %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3 class="mb-3"><i class="fas fa-play-circle"></i> Watch Trailer</h3>
+            <div class="embed-responsive embed-responsive-16by9 rounded shadow">
+                <iframe class="embed-responsive-item" src="{{ embed_url }}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if theaters %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3 class="mb-3">Available Theaters</h3>
+            <div class="list-group">
+                {% for theater in theaters %}
+                <a href="{% url 'reserve_seats' theater.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    <span>{{ theater.name }} - {{ theater.time|date:"M d, Y H:i" }}</span>
+                    <span class="badge badge-primary">Book</span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .embed-responsive-16by9 { max-height: 450px; }
+    @media (max-width: 768px) {
+        .embed-responsive-16by9 { max-height: 250px; }
+    }
+</style>
+{% endblock %}

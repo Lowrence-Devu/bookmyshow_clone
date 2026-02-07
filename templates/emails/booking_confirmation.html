@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmation</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #e50914; color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; background: #f9f9f9; border: 1px solid #ddd; }
+        .booking-details { background: white; padding: 15px; margin: 15px 0; border-radius: 8px; }
+        .detail-row { margin: 8px 0; }
+        .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>BookMySeat</h1>
+        <p>Your Ticket Booking Confirmation</p>
+    </div>
+    <div class="content">
+        <p>Dear {{ user.username }},</p>
+        <p>Thank you for booking with BookMySeat! Your ticket has been confirmed.</p>
+        <div class="booking-details">
+            <h3>Booking Details</h3>
+            <div class="detail-row"><strong>Movie:</strong> {{ movie_name }}</div>
+            <div class="detail-row"><strong>Theater:</strong> {{ theater_name }}</div>
+            <div class="detail-row"><strong>Show Time:</strong> {{ show_time }}</div>
+            <div class="detail-row"><strong>Seat(s):</strong> {{ seats }}</div>
+            <div class="detail-row"><strong>Amount Paid:</strong> ₹{{ amount }}</div>
+            <div class="detail-row"><strong>Booking ID:</strong> {{ booking_id }}</div>
+        </div>
+        <p>Please arrive at the theater 15 minutes before the show. Present this confirmation at the counter.</p>
+    </div>
+    <div class="footer">
+        <p>&copy; BookMySeat. Enjoy your movie!</p>
+    </div>
+</body>
+</html>

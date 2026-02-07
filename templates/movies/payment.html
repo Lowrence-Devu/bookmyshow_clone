@@ -1,0 +1,80 @@
+{% extends "users/basic.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-credit-card"></i> Complete Payment</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small"><i class="fas fa-clock"></i> Seats reserved for 5 minutes. Complete payment to confirm.</p>
+                    <hr>
+                    <p><strong>{{ theater.movie.name }}</strong> - {{ theater.name }}</p>
+                    <p>Show: {{ theater.time|date:"M d, Y H:i" }}</p>
+                    <p><strong>Seats:</strong> {% for s in seats %}{{ s.seat_number }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+                    <p class="h4 text-success"><strong>Total: ₹{{ total_amount }}</strong></p>
+                    <hr>
+
+                    {% if razorpay_key %}
+                    <div id="razorpay-container">
+                        <button id="pay-btn" class="btn btn-success btn-lg btn-block">
+                            <i class="fas fa-lock"></i> Pay with Razorpay
+                        </button>
+                    </div>
+                    <form id="success-form" method="POST" action="{% url 'payment_success' %}" style="display:none;">
+                        {% csrf_token %}
+                        <input type="hidden" name="theater_id" value="{{ theater.id }}">
+                        {% for s in seats %}
+                        <input type="hidden" name="seat_ids" value="{{ s.id }}">
+                        {% endfor %}
+                        <input type="hidden" name="payment_id" id="payment-id">
+                        <input type="hidden" name="amount" value="{{ total_amount }}">
+                    </form>
+                    {% else %}
+                    <form method="POST" action="{% url 'payment_success' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="theater_id" value="{{ theater.id }}">
+                        {% for s in seats %}
+                        <input type="hidden" name="seat_ids" value="{{ s.id }}">
+                        {% endfor %}
+                        <input type="hidden" name="payment_id" value="demo">
+                        <input type="hidden" name="amount" value="{{ total_amount }}">
+                        <button type="submit" class="btn btn-success btn-lg btn-block">
+                            <i class="fas fa-check"></i> Confirm Booking (Demo Mode)
+                        </button>
+                    </form>
+                    {% endif %}
+
+                    <a href="{% url 'theater_list' theater.movie.id %}" class="btn btn-outline-secondary mt-3">Cancel</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if razorpay_key %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+document.getElementById('pay-btn').onclick = function() {
+    var options = {
+        key: "{{ razorpay_key }}",
+        amount: Math.round({{ total_amount }} * 100),
+        currency: "INR",
+        name: "BookMySeat",
+        description: "{{ theater.movie.name }} - {{ theater.name }}",
+        handler: function(res) {
+            document.getElementById('payment-id').value = res.razorpay_payment_id;
+            document.getElementById('success-form').submit();
+        }
+    };
+    var rzp = new Razorpay(options);
+    rzp.on('payment.failed', function() {
+        window.location.href = "{% url 'payment_failed' %}?theater_id={{ theater.id }}";
+    });
+    rzp.open();
+};
+</script>
+{% endif %}
+{% endblock %}
