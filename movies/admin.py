@@ -1,5 +1,9 @@
 from django.contrib import admin
+from django.contrib import messages
 from .models import Movie, Theater, Seat, Booking, SeatReservation
+import logging
+
+logger = logging.getLogger(__name__)
 
 @admin.register(Movie)
 class MovieAdmin(admin.ModelAdmin):
@@ -17,6 +21,15 @@ class MovieAdmin(admin.ModelAdmin):
             'fields': ('ticket_price',)
         }),
     )
+    
+    def save_model(self, request, obj, form, change):
+        try:
+            super().save_model(request, obj, form, change)
+            messages.success(request, f'Movie "{obj.name}" saved successfully!')
+        except Exception as e:
+            logger.error(f'Error saving movie: {str(e)}', exc_info=True)
+            messages.error(request, f'Error saving movie: {str(e)}')
+            raise
 
 
 @admin.register(Theater)
