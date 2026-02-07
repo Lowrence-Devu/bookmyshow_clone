@@ -57,6 +57,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# WhiteNoise configuration for serving static files
+WHITENOISE_AUTOREFRESH = True if DEBUG else False
+WHITENOISE_USE_FINDERS = True
+
 AUTH_USER_MODEL='auth.User'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'noreply@bookmyseat.com'
