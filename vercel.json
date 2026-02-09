@@ -1,12 +1,12 @@
 {
-  "buildCommand": "pip install -r requirements.txt && python manage.py migrate --noinput && python manage.py collectstatic --noinput --clear",
   "builds": [
     {
       "src": "bookmyseat/wsgi.py",
       "use": "@vercel/python",
       "config": {
         "maxLambdaSize": "50mb",
-        "runtime": "python3.10"
+        "runtime": "python3.10",
+        "buildCommand": "pip install -r requirements.txt && python manage.py migrate --noinput && python manage.py collectstatic --noinput --clear"
       }
     }
   ],
