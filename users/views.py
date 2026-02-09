@@ -6,7 +6,14 @@ from django.contrib.auth.decorators import login_required
 from movies.models import Movie , Booking
 
 def home(request):
-    movies= Movie.objects.all()
+    movies = Movie.objects.all()
+    # Add default image URL for movies without images
+    for movie in movies:
+        if not movie.image:
+            # Create a fake image object with a url property
+            class FakeImage:
+                url = "https://via.placeholder.com/300x300?text=No+Image"
+            movie.image = FakeImage()
     return render(request,'home.html',{'movies':movies})
 def register(request):
     if request.method == 'POST':
