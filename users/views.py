@@ -9,18 +9,17 @@ def home(request):
     movies = Movie.objects.all()
     # Add image URL - prefer external_image_url, fall back to image field, then placeholder
     for movie in movies:
+        movie.display_image_url = "https://via.placeholder.com/300x300?text=No+Image"
         try:
             # Try to get external image URL first
             if movie.external_image_url:
                 movie.display_image_url = movie.external_image_url
-            # Then try image field (check if file exists safely)
-            elif movie.image and str(movie.image):
+            # Then try image field - check name attribute to see if file actually exists
+            elif hasattr(movie, 'image') and hasattr(movie.image, 'name') and movie.image.name:
                 movie.display_image_url = movie.image.url
-            else:
-                movie.display_image_url = "https://via.placeholder.com/300x300?text=No+Image"
         except Exception as e:
-            # If any error occurs, use placeholder
-            movie.display_image_url = "https://via.placeholder.com/300x300?text=No+Image"
+            # If any error occurs, just use the placeholder already set above
+            pass
     return render(request,'home.html',{'movies':movies})
 def register(request):
     if request.method == 'POST':
