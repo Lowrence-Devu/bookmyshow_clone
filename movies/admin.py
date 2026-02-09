@@ -15,7 +15,7 @@ class MovieAdmin(admin.ModelAdmin):
         }),
         ('Media', {
             'fields': ('image', 'trailer_url'),
-            'description': 'Image: Optional. For Vercel, use external image URLs. Uploads do not persist.'
+            'description': 'Image: OPTIONAL - For Vercel, do NOT upload files (read-only filesystem). Leave blank or use external URLs only.'
         }),
         ('Pricing', {
             'fields': ('ticket_price',)
@@ -27,8 +27,24 @@ class MovieAdmin(admin.ModelAdmin):
             super().save_model(request, obj, form, change)
             messages.success(request, f'Movie "{obj.name}" saved successfully!')
         except Exception as e:
-            logger.error(f'Error saving movie: {str(e)}', exc_info=True)
-            messages.error(request, f'Error saving movie: {str(e)}')
+            error_msg = str(e)
+            logger.error(f'Error saving movie: {error_msg}', exc_info=True)
+            
+            # Handle read-only filesystem errors on Vercel
+            if 'Read-only file system' in error_msg or 'Permission denied' in error_msg:
+                # Clear the image field and try again
+                if hasattr(obj, 'image') and obj.image:
+                    obj.image = None
+                    try:
+                        super().save_model(request, obj, form, change)
+                        messages.warning(request, f'Movie "{obj.name}" saved but image upload failed (Vercel read-only filesystem). Use external image URLs instead.')
+                        return
+                    except Exception as e2:
+                        logger.error(f'Error saving movie after clearing image: {str(e2)}', exc_info=True)
+                        messages.error(request, f'Error saving movie: {str(e2)}')
+                        raise
+            
+            messages.error(request, f'Error saving movie: {error_msg}')
             raise
 
 
