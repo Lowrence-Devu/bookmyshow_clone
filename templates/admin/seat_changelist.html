@@ -1,0 +1,49 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls static %}
+
+{% block content %}
+<div id="content-main">
+    {% if theater_seats %}
+    <div style="padding: 20px;">
+        <h2>Seat Layout View</h2>
+        
+        {% for theater_name, rows in theater_seats.items %}
+        <div style="margin-bottom: 30px; border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
+            <h3>{{ theater_name }}</h3>
+            
+            {% for row_letter, seats in rows.items %}
+            <div style="margin-bottom: 15px; padding: 10px; background-color: #f9f9f9; border-radius: 3px;">
+                <strong>Row {{ row_letter }}:</strong>
+                <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px;">
+                    {% for seat in seats %}
+                    <span style="
+                        padding: 8px 12px;
+                        border: 1px solid #ccc;
+                        border-radius: 4px;
+                        background-color: {% if seat.is_booked %}#ffcccc{% else %}#ccffcc{% endif %};
+                        font-weight: bold;
+                        font-size: 12px;
+                        cursor: pointer;
+                        display: inline-block;
+                    " title="{% if seat.is_booked %}Booked{% else %}Available{% endif %}">
+                        {{ seat.seat_number }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+        
+        <div style="margin-top: 20px; padding: 15px; background-color: #f0f0f0; border-radius: 5px;">
+            <strong style="color: #2196F3;">Legend:</strong>
+            <span style="padding: 5px 10px; background-color: #ccffcc; border-radius: 3px; margin: 0 5px;">Available</span>
+            <span style="padding: 5px 10px; background-color: #ffcccc; border-radius: 3px; margin: 0 5px;">Booked</span>
+        </div>
+    </div>
+    {% else %}
+    {% endif %}
+    
+    {{ block.super }}
+</div>
+{% endblock %}

@@ -130,6 +130,35 @@ class TheaterAdmin(admin.ModelAdmin):
 @admin.register(Seat)
 class SeatAdmin(admin.ModelAdmin):
     list_display = ['theater', 'seat_number', 'is_booked']
+    list_filter = ['theater', 'is_booked']
+    ordering = ['theater', 'seat_number']
+    change_list_template = 'admin/seat_changelist.html'
+    
+    def changelist_view(self, request, extra_context=None):
+        """Custom changelist view that organizes seats by row."""
+        response = super().changelist_view(request, extra_context)
+        
+        if hasattr(response, 'context_data'):
+            # Get all theaters
+            theaters = Theater.objects.all()
+            theater_seats = {}
+            
+            for theater in theaters:
+                seats = theater.seats.all().order_by('seat_number')
+                rows = {}
+                
+                # Group seats by row letter
+                for seat in seats:
+                    row_letter = seat.seat_number[0] if seat.seat_number else 'X'
+                    if row_letter not in rows:
+                        rows[row_letter] = []
+                    rows[row_letter].append(seat)
+                
+                theater_seats[theater.name] = rows
+            
+            response.context_data['theater_seats'] = theater_seats
+        
+        return response
 
 
 @admin.register(SeatReservation)
