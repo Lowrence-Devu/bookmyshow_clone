@@ -44,23 +44,35 @@
 
           <form method="POST" action="{% url 'reserve_seats' theaters.id %}">
             {% csrf_token %}
-            <div class="d-flex justify-content-center flex-wrap mb-4">
-              {% for seat in seats %}
-              <div class="seat {% if seat.is_booked %}sold{% endif %}">
-                {% if not seat.is_booked %}
-                <input
-                  type="checkbox"
-                  name="seats"
-                  value="{{ seat.id }}"
-                  class="d-none"
-                  id="seat-{{ seat.id }}"
-                />
-                <label
-                  for="seat-{{ seat.id }}"
-                  class="w-100 h-100 d-flex align-items-center justify-content-center"
-                  >{{ seat.seat_number }}</label
-                >
-                {% else %} {{ seat.seat_number }} {% endif %}
+            <div class="seats-layout mb-4">
+              {% regroup seats by seat_number|slice:":1" as seats_by_row %}
+              {% for row_letter, row_seats in seats_by_row %}
+              <div class="seat-row">
+                <div class="row-label">{{ row_letter }}</div>
+                <div class="row-seats">
+                  {% for seat in row_seats %}
+                  <div class="seat {% if seat.is_booked %}sold{% endif %}">
+                    {% if not seat.is_booked %}
+                    <input
+                      type="checkbox"
+                      name="seats"
+                      value="{{ seat.id }}"
+                      class="d-none"
+                      id="seat-{{ seat.id }}"
+                    />
+                    <label
+                      for="seat-{{ seat.id }}"
+                      class="w-100 h-100 d-flex align-items-center justify-content-center"
+                      >{{ seat.seat_number|slice:"1:" }}</label
+                    >
+                    {% else %}
+                    <div class="w-100 h-100 d-flex align-items-center justify-content-center">
+                      {{ seat.seat_number|slice:"1:" }}
+                    </div>
+                    {% endif %}
+                  </div>
+                  {% endfor %}
+                </div>
               </div>
               {% endfor %}
             </div>
@@ -97,29 +109,88 @@
   body {
     font-family: Arial, sans-serif;
   }
-  .seat {
-    width: 30px;
-    height: 30px;
-    border: 1px solid #28a745;
-    margin: 3px;
-    text-align: center;
-    line-height: 30px;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: background-color 0.3s, color 0.3s;
+  
+  .seats-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
   }
-  .seat:hover {
+  
+  .seat-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .row-label {
+    font-weight: bold;
+    font-size: 16px;
+    width: 40px;
+    text-align: center;
+    color: #333;
+  }
+  
+  .row-seats {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .seat {
+    width: 35px;
+    height: 35px;
+    border: 2px solid #28a745;
+    background-color: white;
+    text-align: center;
+    line-height: 33px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .seat:hover:not(.sold) {
     background-color: #28a745;
     color: white;
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
   }
+  
+  .seat input[type="checkbox"]:checked + label {
+    background-color: #28a745;
+    color: white;
+    border-color: #28a745;
+  }
+  
   .seat.selected {
     background-color: #28a745;
     color: white;
+    border-color: #28a745;
   }
+  
   .seat.sold {
-    background-color: #ccc;
+    background-color: #d9d9d9;
+    color: #666;
     cursor: not-allowed;
+    border-color: #bbb;
   }
+  
+  .seat label {
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
   .screen {
     margin: 20px 0;
     background-color: #ccc;
@@ -128,22 +199,27 @@
     line-height: 50px;
     color: #666;
   }
+  
   .footer {
     background-color: #333;
     color: #ccc;
     padding: 20px 0;
   }
+  
   .footer a {
     color: #ccc;
     text-decoration: none;
   }
+  
   .footer a:hover {
     text-decoration: underline;
   }
+  
   .footer .col-md-2,
   .footer .col-md-3 {
     margin-bottom: 20px;
   }
+  
   .footer .social-icons i {
     font-size: 20px;
     margin: 0 10px;
