@@ -305,9 +305,9 @@ def admin_dashboard(request):
             booking_count=Count('id')
         ).order_by('-booking_count')[:5]
         
-        # Enhance with movie details
+        # Enhance with movie details - use only() to avoid new fields that may not exist in DB yet
         popular_movie_ids = [item['movie'] for item in popular_movies]
-        popular_movies = Movie.objects.filter(id__in=popular_movie_ids)
+        popular_movies = Movie.objects.filter(id__in=popular_movie_ids).only('id', 'name', 'genre', 'ticket_price')
 
         # Get busiest theaters by counting bookings
         busiest_theaters = Booking.objects.values('theater').annotate(
