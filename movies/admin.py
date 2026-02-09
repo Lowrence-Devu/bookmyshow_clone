@@ -1,9 +1,42 @@
 from django.contrib import admin
 from django.contrib import messages
+from django import forms
 from .models import Movie, Theater, Seat, Booking, SeatReservation
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+class TheaterForm(forms.ModelForm):
+    """Custom form for Theater that allows creating seats layout."""
+    rows = forms.IntegerField(
+        min_value=1, 
+        max_value=26,  # A-Z
+        required=False,
+        help_text="Number of rows (A, B, C, etc.)"
+    )
+    columns = forms.IntegerField(
+        min_value=1,
+        max_value=100,
+        required=False,
+        help_text="Number of columns (1, 2, 3, etc.)"
+    )
+    
+    class Meta:
+        model = Theater
+        fields = ['name', 'movie', 'time']
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        rows = cleaned_data.get('rows')
+        columns = cleaned_data.get('columns')
+        
+        if (rows and not columns) or (not rows and columns):
+            raise forms.ValidationError(
+                "Please enter both rows AND columns, or leave both empty."
+            )
+        return cleaned_data
+
 
 @admin.register(Movie)
 class MovieAdmin(admin.ModelAdmin):
@@ -50,7 +83,48 @@ class MovieAdmin(admin.ModelAdmin):
 
 @admin.register(Theater)
 class TheaterAdmin(admin.ModelAdmin):
-    list_display = ['name', 'movie', 'time']
+    form = TheaterForm
+    list_display = ['name', 'movie', 'time', 'seat_count']
+    
+    def seat_count(self, obj):
+        return obj.seats.count()
+    seat_count.short_description = 'Total Seats'
+    
+    def save_model(self, request, obj, form, change):
+        """Save theater and auto-generate seats if rows/columns provided."""
+        try:
+            super().save_model(request, obj, form, change)
+            
+            rows = form.cleaned_data.get('rows')
+            columns = form.cleaned_data.get('columns')
+            
+            # Auto-generate seats if layout provided
+            if rows and columns:
+                # Delete existing seats to regenerate
+                obj.seats.all().delete()
+                
+                # Generate seat layout
+                seat_objects = []
+                for row_num in range(rows):
+                    row_letter = chr(65 + row_num)  # A, B, C, etc.
+                    for col_num in range(1, columns + 1):
+                        seat_number = f"{row_letter}{col_num}"
+                        seat_objects.append(
+                            Seat(theater=obj, seat_number=seat_number, is_booked=False)
+                        )
+                
+                # Bulk create seats
+                Seat.objects.bulk_create(seat_objects)
+                messages.success(
+                    request, 
+                    f'Theater "{obj.name}" created with {rows}x{columns} = {rows * columns} seats!'
+                )
+            else:
+                messages.success(request, f'Theater "{obj.name}" saved successfully!')
+        except Exception as e:
+            logger.error(f'Error saving theater: {str(e)}', exc_info=True)
+            messages.error(request, f'Error saving theater: {str(e)}')
+            raise
 
 
 @admin.register(Seat)
