@@ -14,8 +14,8 @@ class MovieAdmin(admin.ModelAdmin):
             'fields': ('name', 'rating', 'genre', 'language', 'cast', 'description')
         }),
         ('Media', {
-            'fields': ('image', 'trailer_url'),
-            'description': 'Image: OPTIONAL - For Vercel, do NOT upload files (read-only filesystem). Leave blank or use external URLs only.'
+            'fields': ('external_image_url', 'image', 'trailer_url'),
+            'description': 'For Vercel deployment: Paste image URL in "External Image URL" field. Do NOT upload files (read-only filesystem).'
         }),
         ('Pricing', {
             'fields': ('ticket_price',)

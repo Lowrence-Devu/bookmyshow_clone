@@ -31,6 +31,7 @@ LANGUAGE_CHOICES = [
 class Movie(models.Model):
     name = models.CharField(max_length=255)
     image = models.ImageField(upload_to="movies/", blank=True, null=True)
+    external_image_url = models.URLField(blank=True, null=True, help_text="For Vercel: Paste external image URL here instead of uploading (e.g., from Imgur, Cloudinary)")
     rating = models.DecimalField(max_digits=3, decimal_places=1, blank=True, null=True)
     cast = models.TextField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
